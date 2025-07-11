@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bonbon's Lucky 9 :p</title> <!-- Corrected title here -->
+    <!-- Load Tailwind CSS for easy styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom CSS for Inter font and general body styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #e0f2fe; /* Light blue background */
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            color: #333;
+        }
+
+        .game-container {
+            background-color: #ffffff; /* White background for the game area */
+            border-radius: 1.5rem; /* More rounded corners */
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15); /* Deeper shadow */
+            padding: 2.5rem;
+            text-align: center;
+            max-width: 95%; /* Responsive width */
+            width: 500px; /* Max width for larger screens */
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #007bb5; /* Telegram blue */
+            margin-bottom: 1rem;
+        }
+
+        .card-display {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap; /* Allow cards to wrap on smaller screens */
+            gap: 1rem;
+            min-height: 120px; /* Ensure space even with no cards */
+        }
+
+        .card {
+            background-color: #f8f8f8; /* Light grey for card background */
+            border: 2px solid #ccc;
+            border-radius: 0.75rem; /* Rounded card corners */
+            width: 80px;
+            height: 110px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+        }
+
+        .card.red {
+            color: #ef4444; /* Red for Hearts and Diamonds */
+        }
+
+        .card.black {
+            color: #1f2937; /* Dark grey for Spades and Clubs */
+        }
+
+        .card-rank {
+            font-size: 1.8rem;
+        }
+
+        .card-suit {
+            font-size: 1.2rem;
+        }
+
+        .score-display {
+            font-size: 3.5rem; /* Larger score text */
+            font-weight: extrabold;
+            color: #0088cc; /* Telegram blue for score */
+            margin-top: 1rem;
+        }
+
+        .game-status {
+            font-size: 1.1rem;
+            color: #555;
+            min-height: 24px; /* Prevent layout shift */
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap; /* Allow buttons to wrap */
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .game-button {
+            background-color: #0088cc; /* Telegram blue */
+            color: white;
+            padding: 0.8rem 2rem;
+            border-radius: 9999px; /* Pill shape */
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease, box-shadow 0.3s ease;
+            border: none;
+            box-shadow: 0 4px 10px rgba(0, 136, 204, 0.4);
+        }
+
+        .game-button:hover:not(:disabled) {
+            background-color: #007bb5; /* Darker blue on hover */
+            transform: translateY(-2px); /* Slight lift effect */
+            box-shadow: 0 6px 15px rgba(0, 136, 204, 0.6);
+        }
+
+        .game-button:active:not(:disabled) {
+            transform: translateY(0); /* Press down effect */
+            box-shadow: 0 2px 5px rgba(0, 136, 204, 0.3);
+        }
+
+        .game-button:disabled {
+            background-color: #a0aec0; /* Grey for disabled buttons */
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 2rem;
+            }
+            .game-container {
+                padding: 1.5rem;
+                gap: 1rem;
+            }
+            .card {
+                width: 70px;
+                height: 100px;
+                font-size: 1.3rem;
+            }
+            .card-rank {
+                font-size: 1.6rem;
+            }
+            .card-suit {
+                font-size: 1rem;
+            }
+            .score-display {
+                font-size: 3rem;
+            }
+            .game-button {
+                padding: 0.7rem 1.8rem;
+                font-size: 1rem;
+            }
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Bonbon's Lucky 9 :p</h1>
+        <div class="card-display" id="cardDisplay">
+            <!-- Cards will be displayed here -->
+        </div>
+        <div class="score-display">Score: <span id="score">0</span></div>
+        <p class="game-status" id="gameStatus">Deal a new hand to start!</p>
+
+        <div class="button-group">
+            <button class="game-button" id="dealButton">Deal New Hand</button>
+            <button class="game-button" id="hitButton" disabled>Hit</button>
+            <button class="game-button" id="standButton" disabled>Stand</button>
+        </div>
+    </div>
+
+    <script>
+        // Get references to HTML elements
+        const cardDisplay = document.getElementById('cardDisplay');
+        const scoreDisplay = document.getElementById('score');
+        const gameStatus = document.getElementById('gameStatus');
+        const dealButton = document.getElementById('dealButton');
+        const hitButton = document.getElementById('hitButton');
+        const standButton = document.getElementById('standButton');
+
+        // Game variables
+        let deck = [];
+        let playerHand = [];
+        let currentScore = 0;
+        let gameActive = false;
+
+        // Card values for Lucky 9
+        const cardValues = {
+            '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9,
+            '10': 0, 'J': 0, 'Q': 0, 'K': 0, 'A': 1
+        };
+
+        // Suits with their unicode characters and color class
+        const suits = [
+            { name: 'Hearts', symbol: '♥', color: 'red' },
+            { name: 'Diamonds', symbol: '♦', color: 'red' },
+            { name: 'Clubs', symbol: '♣', color: 'black' },
+            { name: 'Spades', symbol: '♠', color: 'black' }
+        ];
+        // MODIFICATION START: Removed 'J', 'Q', 'K' from the ranks array
+        const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
+        // MODIFICATION END
+
+        /**
+         * Creates a standard 52-card deck.
+         */
+        function createDeck() {
+            deck = [];
+            for (const suit of suits) {
+                for (const rank of ranks) {
+                    deck.push({ rank, suit: suit.symbol, color: suit.color });
+                }
+            }
+            shuffleDeck();
+        }
+
+        /**
+         * Shuffles the deck using the Fisher-Yates algorithm.
+         */
+        function shuffleDeck() {
+            for (let i = deck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]]; // Swap elements
+            }
+        }
+
+        /**
+         * Deals a single card from the deck.
+         * @returns {Object|null} The dealt card object, or null if deck is empty.
+         */
+        function dealCard() {
+            if (deck.length === 0) {
+                gameStatus.textContent = "No more cards in the deck! Reshuffling...";
+                createDeck(); // Reshuffle if deck runs out
+            }
+            return deck.pop(); // Remove and return the last card
+        }
+
+        /**
+         * Calculates the Lucky 9 score for a given hand.
+         * The score is the sum of card values modulo 10.
+         * @param {Array<Object>} hand - The array of card objects.
+         * @returns {number} The calculated Lucky 9 score.
+         */
+        function calculateScore(hand) {
+            let sum = 0;
+            for (const card of hand) {
+                sum += cardValues[card.rank];
+            }
+            return sum % 10;
+        }
+
+        /**
+         * Renders the player's hand on the screen.
+         */
+        function displayCards() {
+            cardDisplay.innerHTML = ''; // Clear previous cards
+            playerHand.forEach(card => {
+                const cardElement = document.createElement('div');
+                cardElement.classList.add('card', card.color, 'flex-shrink-0');
+                cardElement.innerHTML = `
+                    <span class="card-rank">${card.rank}</span>
+                    <span class="card-suit">${card.suit}</span>
+                `;
+                cardDisplay.appendChild(cardElement);
+            });
+            scoreDisplay.textContent = currentScore;
+        }
+
+        /**
+         * Updates the game status message.
+         * @param {string} message - The message to display.
+         * @param {string} type - Optional type for styling (e.g., 'win', 'lose').
+         */
+        function updateGameStatus(message, type = '') {
+            gameStatus.textContent = message;
+            // You could add class-based styling here for different message types
+            // e.g., gameStatus.className = `game-status ${type}`;
+        }
+
+        /**
+         * Enables or disables game action buttons.
+         * @param {boolean} enableHit - Whether the Hit button should be enabled.
+         * @param {boolean} enableStand - Whether the Stand button should be enabled.
+         */
+        function setActionButtonsState(enableHit, enableStand) {
+            hitButton.disabled = !enableHit;
+            standButton.disabled = !enableStand;
+            dealButton.disabled = enableHit || enableStand; // Disable deal during active game
+        }
+
+        /**
+         * Starts a new game round.
+         */
+        function dealNewHand() {
+            createDeck(); // Create and shuffle a new deck
+            playerHand = [];
+            gameActive = true;
+
+            // Deal initial two cards
+            playerHand.push(dealCard());
+            playerHand.push(dealCard());
+
+            currentScore = calculateScore(playerHand);
+            displayCards();
+            updateGameStatus("Your hand. Hit or Stand?");
+            setActionButtonsState(true, true); // Enable Hit and Stand
+            
+            // Check for immediate Lucky 9
+            if (currentScore === 9 && playerHand.length === 2) {
+                updateGameStatus("LUCKY 9! You got 9 on the first two cards!");
+                endGame();
+            }
+        }
+
+        /**
+         * Player chooses to hit (take another card).
+         */
+        function hit() {
+            if (!gameActive) return;
+
+            const newCard = dealCard();
+            if (newCard) {
+                playerHand.push(newCard);
+                currentScore = calculateScore(playerHand);
+                displayCards();
+                updateGameStatus("You hit. Current score: " + currentScore);
+
+                // In Lucky 9, you can keep hitting, but the score is always modulo 10.
+                // No "bust" in the traditional sense, just aiming for 9.
+                if (playerHand.length >= 5) { // Limit cards to prevent infinite hits or too many cards
+                    updateGameStatus("You've drawn 5 cards. Time to Stand!");
+                    endGame();
+                } else if (currentScore === 9) {
+                    updateGameStatus("You hit and got 9! Great hand!");
+                    endGame();
+                }
+            } else {
+                updateGameStatus("No more cards to draw!");
+                endGame();
+            }
+        }
+
+        /**
+         * Player chooses to stand (end their turn).
+         */
+        function stand() {
+            if (!gameActive) return;
+
+            updateGameStatus(`You stood. Your final score is ${currentScore}.`);
+            endGame();
+        }
+
+        /**
+         * Ends the current game round.
+         */
+        function endGame() {
+            gameActive = false;
+            setActionButtonsState(false, false); // Disable Hit and Stand
+            dealButton.disabled = false; // Enable Deal New Hand
+        }
+
+        // Add event listeners to buttons
+        dealButton.addEventListener('click', dealNewHand);
+        hitButton.addEventListener('click', hit);
+        standButton.addEventListener('click', stand);
+
+        // Initial setup when the page loads
+        window.onload = function() {
+            updateGameStatus("Click 'Deal New Hand' to begin!");
+            setActionButtonsState(false, false); // All action buttons disabled initially
+            dealButton.disabled = false; // Only deal button is active
+        };
+    </script>
+</body>
+</html>
